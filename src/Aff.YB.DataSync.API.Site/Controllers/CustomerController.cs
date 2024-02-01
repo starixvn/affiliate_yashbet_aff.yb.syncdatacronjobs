@@ -1,4 +1,4 @@
-﻿using Aff.YB.DataSync.API.Infastructure.Command;
+using Aff.YB.DataSync.API.Infastructure.Command;
 using Aff.YB.DataSync.API.Infastructure.Criteria;
 using Aff.YB.DataSync.API.Infastructure.Params;
 using Aff.YB.DataSync.DataDomain.Api;
@@ -42,7 +42,7 @@ namespace Aff.YB.DataSync.API.Site.Controllers
         public async Task<CustomerModel> GetLoginCustomerInfo(string userName, int siteId)
         {
             CustomerModel cust = null;
-            if (!HasNonASCIIChars(userName))
+            if (!string.IsNullOrWhiteSpace(userName) && !HasNonASCIIChars(userName))
             {
                 cust = await _dynamicRepository.GetAsync<CustomerModel>(new GetLoginCustInfoCriteria() { UserName = userName, SiteId = siteId });
             }

@@ -56,7 +56,10 @@ namespace Aff.YB.DataSync.API.Infastructure.Services
                   encryptCredenction
                   );
 
-            token.AccessToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+            token.AccessToken = handler.WriteToken(jwtToken);
+            token.TokenType = handler.TokenType.Name;
+            token.ExpiresIn = _tokenManagement.AccessExpiration;
+
             return Task.FromResult(Tuple.Create(true, token));
 
         }
