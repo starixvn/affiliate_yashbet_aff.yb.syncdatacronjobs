@@ -1,11 +1,12 @@
 ﻿using Aff.YB.DataSync.Service.Core.Domain;
+using Aff.YB.DataSync.Service.Core.Domain.DTOs;
 
 namespace Aff.YB.DataSync.Service.Core.Repository
 {
     public interface IDataTrackerRepository
     {
-        Task UpdateDataTrackerAsync(IDataTrackerItem command);
+        Task UpdateDataTrackerAsync(IDataTracker command);
 
-        Task<IEnumerable<IDataTrackerItem>> FetchDataTracker(IDataTrackerItem criteria);
+        Task<IEnumerable<DataTrackerItem>> FetchDataTracker(IDataTracker criteria);
     }
 }

@@ -1,0 +1,24 @@
+﻿using Aff.YB.DataSync.Service.Core.Domain;
+
+namespace Aff.YB.DataSync.Service.Infrastructure.SpParams.Commands
+{
+    public class InsertImportTrackerCommand : IdenticalSuffixNonQueryCommand, IImportTimeTracker
+    {
+        public InsertImportTrackerCommand(string prefixProvider = null) : base(prefixProvider) { }
+        protected override string SuffixSettingKey => "Task_API_TimeTracker_Import";
+
+        public override bool IsValid() => true;
+
+        public string DataSource { get; set; }
+
+        public DateTime CalledTime { get; set; }
+
+        public bool IsReset { get; set; }
+
+        public string KeyValue { get; set; } = string.Empty;
+
+        public int ErrCode { get; set; } = 0;
+
+        public string ErrMsg { get; set; } = string.Empty;
+    }
+}
