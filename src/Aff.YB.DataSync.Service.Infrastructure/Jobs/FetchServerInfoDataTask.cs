@@ -5,6 +5,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Constants;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,7 +18,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         public FetchServerInfoDataTask(IThirdPartyImportRepository thirdPartyImportRepository
             , ILicenseeApi licenseeApi
-            , ILogger logger
+            , ILogger<FetchServerInfoDataTask> logger
             , IOptionsSnapshot<FetchServiceSetting> setting)
             : base(thirdPartyImportRepository, setting.Get(ServiceConfigName.PULL_SERVER_INFO_SETTING))
         {
@@ -25,6 +26,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             _licenseeApi = licenseeApi ?? throw new ArgumentNullException(nameof(licenseeApi));
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async override Task FetchDataAsync()
         {
             var data = await _licenseeApi.GetServerInfoAsync();

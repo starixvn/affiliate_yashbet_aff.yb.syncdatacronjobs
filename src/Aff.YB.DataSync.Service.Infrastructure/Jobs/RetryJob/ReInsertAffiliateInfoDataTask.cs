@@ -4,6 +4,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Apis;
 using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Constants;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Interfaces;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -23,7 +24,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs.RetryJob
         public ReInsertAffiliateInfoDataTask(IDataTrackerService dataTrackerService,
             ILicenseeApi licenseeApi,
             IOptionsSnapshot<FetchServiceSetting> configuration,
-            ILogger logger
+            ILogger<ReInsertAffiliateInfoDataTask> logger
             )
         {
             _trackerService = dataTrackerService;
@@ -32,6 +33,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs.RetryJob
             Setting = configuration.Get(ServiceConfigName.INSERT_AFFILIATE_SETTING);
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async Task HandleAsync()
         {
             var prefixPrviders = Setting.SupportedPrefix;

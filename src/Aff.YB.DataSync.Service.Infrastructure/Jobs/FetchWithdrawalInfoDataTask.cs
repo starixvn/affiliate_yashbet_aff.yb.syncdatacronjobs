@@ -5,6 +5,7 @@ using Aff.YB.DataSync.Service.Core.Services;
 using Aff.YB.DataSync.Service.Infrastructure.Apis;
 using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -21,7 +22,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         public FetchWithdrawalInfoDataTask(IThirdPartyImportRepository thirdPartyImportRepository,
             ITrackerService trackerService,
-            ILogger logger,
+            ILogger<FetchWithdrawalInfoDataTask> logger,
             ILicenseeApi licenseeApi,
             IOptionsSnapshot<FetchServiceSetting> configuration)
             : base(thirdPartyImportRepository, configuration.Get(Constants.ServiceConfigName.PULL_WITHDRAWAL_INFO), trackerService)
@@ -30,6 +31,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             Api = licenseeApi;
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public override async Task FetchDataAsync()
         {
             try

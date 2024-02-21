@@ -6,6 +6,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Interfaces;
 using Aff.YB.DataSync.Service.Infrastructure.SpParams;
 using Aff.YB.DataSync.Service.Infrastructure.SpParams.Commands;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -39,6 +40,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             _setting = config.Value ?? throw new NullReferenceException(nameof(_setting));
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async Task FetchDataAsync()
         {
             if (SupportedSites == null

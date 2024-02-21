@@ -18,7 +18,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs.Bonus
 
         public FetchBonusInfoDataTask(ILicenseeApi licenseeApi,
             IThirdPartyImportRepository _thirdPartyRepo,
-            ILogger logger,
+            ILogger<FetchBonusInfoDataTask> logger,
             ITrackerService timeTrackerService,
             IOptionsSnapshot<FetchServiceSetting> configuration)
             : base(_thirdPartyRepo, configuration.Get(Constants.ServiceConfigName.PULL_BONUS_INFO_SETTING), timeTrackerService)

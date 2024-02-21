@@ -7,6 +7,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Interfaces;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -23,7 +24,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         public FetchBetRecordDataTask(ILicenseeApi licenseeApi,
             IThirdPartyImportRepository _thirdPartyRepo,
-            ILogger logger,
+            ILogger<FetchBetRecordDataTask> logger,
             ITrackerService timeTrackerService,
             IOptionsSnapshot<FetchServiceSetting> configuration)
             : base(_thirdPartyRepo, configuration.Get(Constants.ServiceConfigName.PULL_BET_RECORD_SETTING))
@@ -33,6 +34,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             _timeTrackerService = timeTrackerService;
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public override async Task FetchDataAsync()
         {
             var fromDate = await GetLastTimeFetchDateAsync();
@@ -40,6 +43,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             await FetchDataAndTrackTimeAsync(fromDate, toDate);
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async Task FetchDataAsync(DateTime fromDate, DateTime toDate)
         {
             var intervalTime = GetApiMaxTimeRange();
@@ -58,6 +63,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             }
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async Task FetchLastMonthAsync()
         {
             var now = DateTime.Now;
@@ -67,6 +74,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             await FetchDataAsync(firstDayLastMonth, firstDayThisMonth);
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async Task FetchFromAdjusmentDayAsync(int day)
         {
             var lastFetchDate = await GetLastTimeFetchDateAsync();
@@ -75,6 +84,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             await FetchDataAsync(fromDate, toDate);
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async Task FetchAllDay(int adjustHour)
         {
             var lastFetchDate = await GetLastTimeFetchDateAsync();

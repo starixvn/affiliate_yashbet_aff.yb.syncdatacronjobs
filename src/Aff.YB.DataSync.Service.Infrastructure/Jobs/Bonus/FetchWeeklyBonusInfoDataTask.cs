@@ -7,6 +7,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Constants;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
+using Hangfire;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -29,6 +30,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs.Bonus
             _trackerService = timeTrackerService;
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public override async Task FetchDataAsync()
         {
             var date = GetLastMonthDate();

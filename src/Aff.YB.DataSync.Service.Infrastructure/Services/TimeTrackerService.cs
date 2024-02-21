@@ -1,4 +1,16 @@
-﻿namespace Aff.YB.DataSync.Service.Infrastructure.Services
+﻿using Aff.YB.DataSync.Service.Core.Domain.DTOs;
+using Aff.YB.DataSync.Service.Core.Repository;
+using Aff.YB.DataSync.Service.Core.Services;
+using Aff.YB.DataSync.Service.Infrastructure.Configurations;
+using Aff.YB.DataSync.Service.Infrastructure.Constants;
+using Aff.YB.DataSync.Service.Infrastructure.Exceptions;
+using Aff.YB.DataSync.Service.Infrastructure.Helpers;
+using Aff.YB.DataSync.Service.Infrastructure.SpParams;
+using Aff.YB.DataSync.Service.Infrastructure.SpParams.Commands;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace Aff.YB.DataSync.Service.Infrastructure.Services
 {
     public class TimeTrackerService : ITrackerService
     {
@@ -9,7 +21,7 @@
 
         public TimeTrackerService(ITrackerRepository timeTrackerRepository
             , IOptionsSnapshot<TimeTrackerSetting> optionsSnapshot
-            , ILogger logger)
+            , ILogger<TimeTrackerService> logger)
         {
             _timeTrackerRepository = timeTrackerRepository ?? throw new ArgumentNullException(nameof(timeTrackerRepository));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -37,7 +49,7 @@
             var supportedPrefix = Setting.SourcePrefix;
             foreach (var p in supportedPrefix)
             {
-                var param = new InsertImportTrackerCommand(new PrefixProvider(p))
+                var param = new InsertImportTrackerCommand(p)
                 {
                     CalledTime = tracker.CalledTime,
                     KeyValue = tracker.KeyValue,
@@ -60,7 +72,7 @@
             var supportedPrefix = Setting.SourcePrefix;
             foreach (var prefix in supportedPrefix)
             {
-                var param = new GetLastedImportTimeCriteria(new PrefixProvider(prefix))
+                var param = new GetLastedImportTimeCriteria(prefix)
                 {
                     DataSource = source
                 };
@@ -69,14 +81,14 @@
                     var trackerInfo = await _timeTrackerRepository.GetLastedTrackerAsync(param);
                     if (trackerInfo == null)
                     {
-                        await _logger.WarnAsync($"Can't get track time from {source} of DB {prefix}");
+                        _logger.LogWarning($"Can't get track time from {source} of DB {prefix}");
                         continue;
                     }
                     lstTracker.Add(trackerInfo);
                 }
                 catch (Exception ex)
                 {
-                    await _logger.ErrorAsync(ErrorMessageHelper.GenerateMessage(ex), ex);
+                    _logger.LogError(ex, ErrorMessageHelper.GenerateMessage(ex));
                 }
             }
             return lstTracker;

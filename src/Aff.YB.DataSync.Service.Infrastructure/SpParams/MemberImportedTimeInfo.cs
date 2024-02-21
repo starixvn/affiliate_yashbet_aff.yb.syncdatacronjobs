@@ -2,7 +2,7 @@
 {
     public class MemberImportedTimeInfo : SettingInfo
     {
-        public MemberImportedTimeInfo(string? prefixProvider) : base(prefixProvider)
+        public MemberImportedTimeInfo(string prefixProvider) : base(prefixProvider)
         {
         }
 

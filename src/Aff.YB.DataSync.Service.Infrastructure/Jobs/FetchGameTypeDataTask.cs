@@ -5,6 +5,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Constants;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -17,7 +18,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         public FetchGameTypeDataTask(IThirdPartyImportRepository thirdPartyImportRepository
             , ILicenseeApi licenseeApi
-            , ILogger logger
+            , ILogger<FetchGameTypeDataTask> logger
             , IOptionsSnapshot<FetchServiceSetting> setting)
             : base(thirdPartyImportRepository, setting.Get(ServiceConfigName.PULL_GAME_TYPE_SETTING))
         {
@@ -25,6 +26,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async override Task FetchDataAsync()
         {
             var data = await _licenseeApi.GetGameTypeAsync();

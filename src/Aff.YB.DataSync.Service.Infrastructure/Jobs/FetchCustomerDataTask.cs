@@ -8,6 +8,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Constants;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Interfaces;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -31,7 +32,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         public FetchCustomerDataTask(IThirdPartyImportRepository thirdPartyImportRepository
             , ILicenseeApi licenseeApi
-            , ILogger logger
+            , ILogger<FetchCustomerDataTask> logger
             , ITrackerService timeTrackerService
             , IOptionsSnapshot<FetchServiceSetting> setting)
             : base(thirdPartyImportRepository, setting.Get(ServiceConfigName.PULL_CUSTOMER_SETTING))
@@ -40,6 +41,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             _liceseeApi = licenseeApi ?? throw new ArgumentNullException(nameof(licenseeApi));
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public override async Task FetchDataAsync()
         {
             var tracker = await _timeTrackerService.GetTrackerAsync(TableName, t => t.CalledTime);
@@ -65,6 +68,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             }
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async Task FetchDataDailyTask()
         {
             var adjustmentDay = DateTime.Now.AddDays(-1);
@@ -73,9 +78,17 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             {
                 var data = await _liceseeApi.GetCustomersAsync(fromDate, BATCH_COUNT);
                 var toDate = data.Max(_ => _.RegTime);
-                fromDate = toDate.Value;
                 await ImportDataToMultipleRepoAsync(data);
                 if (data.Count() < BATCH_COUNT)
+                {
+                    break;
+                }
+
+                if(toDate.HasValue)
+                {
+                    fromDate = toDate.Value;
+                }
+                else
                 {
                     break;
                 }

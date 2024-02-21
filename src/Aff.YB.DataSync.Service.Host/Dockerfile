@@ -1,24 +1,40 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+FROM hub.nexdev.net/base/dotnet/core/sdk:6.0-alpine AS builder
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
-WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+WORKDIR "/src"
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["src/Aff.YS.DataSyncService.Site/Aff.YS.DataSyncService.Site.csproj", "src/Aff.YS.DataSyncService.Site/"]
-RUN dotnet restore "./src/Aff.YS.DataSyncService.Site/./Aff.YS.DataSyncService.Site.csproj"
-COPY . .
-WORKDIR "/src/src/Aff.YS.DataSyncService.Site"
-RUN dotnet build "./Aff.YS.DataSyncService.Site.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet nuget add source https://nuget.nexdev.net/api/v2
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Aff.YS.DataSyncService.Site.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+COPY ["src/Aff.YB.DataSync.Service.Core/Aff.YB.DataSync.Service.Core.csproj", "./Aff.YB.DataSync.Service.Core/"]
+RUN dotnet restore "Aff.YB.DataSync.Service.Core/Aff.YB.DataSync.Service.Core.csproj" -v n
 
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Aff.YS.DataSyncService.Site.dll"]
+COPY ["src/Aff.YB.DataSync.Service.Infrastructure/Aff.YB.DataSync.Service.Infrastructure.csproj", "./Aff.YB.DataSync.Service.Infrastructure/"]
+RUN dotnet restore "Aff.YB.DataSync.Service.Infrastructure/Aff.YB.DataSync.Service.Infrastructure.csproj" -v n
+
+COPY ["src/Aff.YB.DataSync.Service.Host/Aff.YB.DataSync.Service.Host.csproj", "./Aff.YB.DataSync.Service.Host/"]
+RUN dotnet restore "Aff.YB.DataSync.Service.Host/Aff.YB.DataSync.Service.Host.csproj" -v n
+
+COPY "/src" .
+
+WORKDIR "/src/Aff.YB.DataSync.Service.Host"
+RUN dotnet build "Aff.YB.DataSync.Service.Host.csproj" -c Release -o /app/build
+
+RUN dotnet publish "Aff.YB.DataSync.Service.Host.csproj" -c Release -o /app/publish
+
+FROM hub.nexdev.net/base/dotnet/core/aspnet:6.0-alpine
+
+ENV ASPNETCORE_URLS=http://+:5000
+EXPOSE 5000
+
+# Don’t run as root
+RUN adduser --disabled-password \
+  --home /app \
+  --gecos '' dotnetuser && chown -R dotnetuser /app && chown -R dotnetuser /tmp
+USER dotnetuser
+#
+
+WORKDIR "/app"
+
+COPY --from=builder /app/publish .
+ENV TZ="America/La_Paz"
+
+ENTRYPOINT ["dotnet", "Aff.YB.DataSync.Service.Host.dll"]

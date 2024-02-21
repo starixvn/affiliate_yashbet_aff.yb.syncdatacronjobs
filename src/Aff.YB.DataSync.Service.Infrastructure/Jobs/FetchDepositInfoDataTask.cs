@@ -7,6 +7,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Constants;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -23,7 +24,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         public FetchDepositInfoDataTask(IThirdPartyImportRepository thirdPartyImportRepository
             , ILicenseeApi licenseeApi
-            , ILogger logger
+            , ILogger<FetchDepositInfoDataTask> logger
             , ITrackerService trackerService
             , IOptionsSnapshot<FetchServiceSetting> setting)
             : base(thirdPartyImportRepository, setting.Get(ServiceConfigName.PULL_DEPOSIT_INFO_SETTING))
@@ -33,6 +34,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
             _trackerService = trackerService;
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public override async Task FetchDataAsync()
         {
             var tracker = await GetAdjustmentLastTrackerAsync();

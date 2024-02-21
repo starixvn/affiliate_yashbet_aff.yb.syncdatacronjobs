@@ -19,7 +19,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs.Product9W
 
         public FetchTpWager9WDataTask(IProduct9WApi licenseeApi,
              IThirdPartyImportRepository _thirdPartyRepo,
-             ILogger logger,
+             ILogger<FetchTpWager9WDataTask> logger,
              ITrackerService timeTrackerService,
              IOptionsSnapshot<FetchServiceSetting> configuration)
             : base(_thirdPartyRepo, configuration.Get(Constants.ServiceConfigName.PULL_TPWAGER_9W_SETTING), timeTrackerService)

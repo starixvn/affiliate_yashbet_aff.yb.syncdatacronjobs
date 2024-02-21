@@ -1,6 +1,28 @@
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
+namespace Aff.YB.DataSync.Service.Host
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
 
-app.MapGet("/", () => "Hello World!");
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder(args)
+              .ConfigureAppConfiguration((builderContext, config) =>
+              {
+                  var env = builderContext.HostingEnvironment;
+                  config.SetBasePath(env.ContentRootPath);
+                  config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: false);
+                  config.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+                  config.AddEnvironmentVariables();
+              })
 
-app.Run();
+               .ConfigureWebHostDefaults(webBuilder =>
+               {
+                   webBuilder.UseSentry();
+                   webBuilder.UseStartup<Startup>();
+
+               });
+    }
+}

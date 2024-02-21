@@ -3,6 +3,7 @@ using Aff.YB.DataSync.Service.Core.Repository;
 using Aff.YB.DataSync.Service.Core.Services;
 using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
+using Hangfire;
 
 namespace Aff.YB.DataSync.Service.Infrastructure.Jobs.Base
 {
@@ -22,6 +23,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs.Base
             _timeTrackerService = trackerService;
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public override async Task FetchDataAsync()
         {
             var queryValue = await GetLastTrackingValueAsync();

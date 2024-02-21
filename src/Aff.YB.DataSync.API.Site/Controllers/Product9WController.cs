@@ -21,7 +21,7 @@ namespace Aff.YB.DataSync.API.Site.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<TpReport9WModel>> GetTpReport(BaseParam param)
+        public async Task<IEnumerable<TpReport9WModel>> GetTpReport([FromQuery]BaseParam param)
             => await _dynamicRepository.FetchAsync<TpReport9WModel>(new GetTpReport9WCriteria
             {
                 FromDate = param.FromDate,
@@ -31,7 +31,7 @@ namespace Aff.YB.DataSync.API.Site.Controllers
             });
 
         [HttpGet]
-        public async Task<IEnumerable<TpWager9WModel>> GetTpWager(BaseParam param)
+        public async Task<IEnumerable<TpWager9WModel>> GetTpWager([FromQuery]BaseParam param)
             => await _dynamicRepository.FetchAsync<TpWager9WModel>(new GetTpWager9WCriteria
             {
                 FromDate = param.FromDate,

@@ -6,6 +6,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Apis;
 using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
+using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -21,7 +22,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs.Log
 
         public FetchRebateMLogDataTask(ILicenseeApi licenseeApi,
             IThirdPartyImportRepository _thirdPartyRepo,
-            ILogger logger,
+            ILogger<FetchRebateMLogDataTask> logger,
             ITrackerService timeTrackerService,
             IOptionsSnapshot<FetchServiceSetting> configuration)
             : base(_thirdPartyRepo, configuration.Get(Constants.ServiceConfigName.PULL_REBATEMLOG_SETTING))
@@ -31,6 +32,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs.Log
             TrackerService = timeTrackerService;
         }
 
+        [DisableConcurrentExecution(60)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public override async Task FetchDataAsync()
         {
             var tracker = await TrackerService.GetTrackerAsync(TableName, t => t.CalledTime);
