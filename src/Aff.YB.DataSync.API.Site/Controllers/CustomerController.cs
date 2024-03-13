@@ -4,6 +4,7 @@ using Aff.YB.DataSync.API.Infastructure.Params;
 using Aff.YB.DataSync.DataDomain.Api;
 using Aff.YB.DataSync.DataDomain.Models;
 using Fanex.Data.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,6 +19,7 @@ namespace Aff.YB.DataSync.API.Site.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class CustomerController : ControllerBase
     {
         private readonly IDynamicRepository _dynamicRepository;
@@ -34,8 +36,8 @@ namespace Aff.YB.DataSync.API.Site.Controllers
             => await _dynamicRepository.FetchAsync<AffCustomerModel>(new GetAffCustomersCriteria(fromDate));
 
         [HttpGet]
-        public async Task<IEnumerable<CustomerModel>> GetCustomers(DateTime fromDate, int batchCount = 2000)
-            => await _dynamicRepository.FetchAsync<CustomerModel>(new GetCustomersCriteria(fromDate, batchCount));
+        public async Task<IEnumerable<CustomerModel>> GetCustomers(DateTime fromDate, DateTime toDate, int pageIndex, int pageSize = 2000)
+            => await _dynamicRepository.FetchAsync<CustomerModel>(new GetCustomersCriteria(fromDate, toDate, pageIndex, pageSize));
 
 
         [HttpGet]

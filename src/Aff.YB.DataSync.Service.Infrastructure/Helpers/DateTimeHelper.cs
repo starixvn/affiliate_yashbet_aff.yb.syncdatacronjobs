@@ -22,8 +22,10 @@
         }
 
         public static DateTime GetSmallerTime(DateTime compareTime, DateTime endTime)
-        {
-            return DateTime.Compare(compareTime, endTime) > 0 ? endTime : compareTime;
-        }
+            => DateTime.Compare(compareTime, endTime) > 0 ? endTime : compareTime;
+        
+
+        public static DateTime GetApiServerDateTime()
+            => DateTime.UtcNow;
     }
 }

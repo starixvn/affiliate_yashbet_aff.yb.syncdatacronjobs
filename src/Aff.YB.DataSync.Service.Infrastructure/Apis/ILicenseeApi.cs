@@ -14,7 +14,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Apis
         Task<IEnumerable<AffCustomerModel>> GetAffCustomerAsync(DateTime fromDate);
 
         [Get("/customer/GetCustomers")]
-        Task<IEnumerable<CustomerModel>> GetCustomersAsync(DateTime fromDate, int batchCount = 2000);
+        Task<IEnumerable<CustomerModel>> GetCustomersAsync(DateTime fromDate, DateTime toDate, int pageIndex, int pageSize = 2000);
 
         [Get("/customer/GetFixedCustomers")]
         Task<IEnumerable<CustomerModel>> GetFixedCustomers();
@@ -29,7 +29,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Apis
         Task<IEnumerable<TpGameTypeModel>> GetGameTypeAsync();
 
         [Get("/betreport/GetDepositInfo")]
-        Task<IEnumerable<DepositInfoModel>> GetDepositInfo(DateTime updatedTime, int id, int totalRow);
+        Task<IEnumerable<DepositInfoModel>> GetDepositInfo(DateTime fromDate, DateTime toDate, int pageIndex, int pageSize = 2000);
 
         [Get("/BetReport/GetBonusInfo")]
         Task<IEnumerable<BonusModel>> GetBonusInfo(int id, int batchCount);

@@ -7,6 +7,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Constants;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
+using Aff.YB.DataSync.Service.Infrastructure.Services;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -39,35 +40,43 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
         public override async Task FetchDataAsync()
         {
             var tracker = await GetAdjustmentLastTrackerAsync();
-            var data = await _licenseeApi.GetDepositInfo(tracker.UpdateTime, tracker.Id, MAX_ROW_COUNT);
-            await ImportDataAsync(data);
+            await FetchDataAsync(tracker.UpdateTime);
         }
 
-        private async Task ImportDataAsync(IEnumerable<DepositInfoModel> data)
+        public async Task FetchDataAsync(DateTime fromDate)
         {
-            var importData = data;
-            while (importData != null && importData.Any())
+            var timeRange = GetApiMaxTimeRange();
+            var apiServerNow = DateTimeHelper.GetApiServerDateTime();
+            var dateRanges = DateTimeHelper.GetProportionTimeRange(fromDate, apiServerNow, timeRange);
+            foreach (var range in dateRanges)
             {
-                await ImportDataToMultipleRepoAsync(importData);
-                var trackerItem = new TrackerItem
+                int pageIndex = 0;
+                while (true)
                 {
-                    Id = importData.Max(_ => _.DepositId),
-                    UpdateTime = importData.Max(_ => _.UpdateTime.Value),
-                };
-                await _trackerService.SaveTrackerAsync(TableName,
-                    new TrackerInfo
+                    var data = await _licenseeApi.GetDepositInfo(range.FromDate, range.ToDate, pageIndex, MAX_ROW_COUNT);
+                    if (data.Count() == 0)
                     {
-                        CalledTime = DateTime.Now,
-                        KeyValue = JsonConvert.SerializeObject(trackerItem)
-                    });
+                        break;
+                    }
+                    await ImportDataToMultipleRepoAsync(data);
+                    pageIndex++;
 
-                if (importData.Count() == MAX_ROW_COUNT)
-                {
-                    importData = await _licenseeApi.GetDepositInfo(trackerItem.UpdateTime, trackerItem.Id, MAX_ROW_COUNT);
-                }
-                else
-                {
-                    break;
+                    var trackerItem = new TrackerItem
+                    {
+                        Id = data.Max(_ => _.DepositId),
+                        UpdateTime = data.Max(_ => _.UpdateTime.Value),
+                    };
+                    await _trackerService.SaveTrackerAsync(TableName,
+                        new TrackerInfo
+                        {
+                            CalledTime = DateTime.Now,
+                            KeyValue = JsonConvert.SerializeObject(trackerItem)
+                        });
+
+                    if (data.Count() < MAX_ROW_COUNT)
+                    {
+                        break;
+                    }
                 }
             }
         }
@@ -85,6 +94,9 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         protected override IEnumerable<string> GetSupportedRepoPrefix()
             => Settings.SupportedPrefix;
+
+        private TimeSpan GetApiMaxTimeRange()
+            => TimeSpan.FromMinutes(Settings.MaxTimeRange);
 
         private sealed class TrackerItem
         {

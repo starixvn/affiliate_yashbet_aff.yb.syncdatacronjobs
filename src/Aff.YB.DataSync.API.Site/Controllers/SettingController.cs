@@ -1,6 +1,7 @@
 ﻿using Aff.YB.DataSync.API.Infastructure.Criteria;
 using Aff.YB.DataSync.DataDomain.Models;
 using Fanex.Data.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace Aff.YB.DataSync.API.Site.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class SettingController : ControllerBase
     {
         private readonly IDynamicRepository _dynamicRepository;

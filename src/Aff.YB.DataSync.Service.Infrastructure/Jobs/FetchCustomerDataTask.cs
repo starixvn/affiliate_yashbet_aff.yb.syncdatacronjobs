@@ -32,7 +32,6 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         public FetchCustomerDataTask(IThirdPartyImportRepository thirdPartyImportRepository
             , ILicenseeApi licenseeApi
-            , ILogger<FetchCustomerDataTask> logger
             , ITrackerService timeTrackerService
             , IOptionsSnapshot<FetchServiceSetting> setting)
             : base(thirdPartyImportRepository, setting.Get(ServiceConfigName.PULL_CUSTOMER_SETTING))
@@ -52,19 +51,28 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         public async Task FetchDataAsync(DateTime fromDate)
         {
-            var reqFromDate = fromDate;
-            while (true)
+            var timeRange = GetApiMaxTimeRange();
+            var apiServerNow = DateTimeHelper.GetApiServerDateTime();
+            var dateRanges = DateTimeHelper.GetProportionTimeRange(fromDate, apiServerNow, timeRange);
+            foreach (var range in dateRanges)
             {
-                var data = await _liceseeApi.GetCustomersAsync(reqFromDate, BATCH_COUNT);
-                var toDate = data.Max(_ => _.RegTime);
-                reqFromDate = toDate.Value;
-                await ImportDataToMultipleRepoAsync(data);
-                var tracker = new TrackerInfo { CalledTime = DateTime.Now, KeyValue = toDate.Value.ToString(Format.DateTimeFormat) };
-                await _timeTrackerService.SaveTrackerAsync(TableName, tracker);
-                if (data.Count() < BATCH_COUNT)
+                int pageIndex = 0;
+                while (true)
                 {
-                    break;
+                    var data = await _liceseeApi.GetCustomersAsync(range.FromDate, range.ToDate, pageIndex, BATCH_COUNT);
+                    if (data.Count() == 0)
+                    {
+                        break;
+                    }
+                    await ImportDataToMultipleRepoAsync(data);
+                    pageIndex++;
+                    if (data.Count() < BATCH_COUNT)
+                    {
+                        break;
+                    }
                 }
+                var tracker = new TrackerInfo { CalledTime = DateTime.Now, KeyValue = range.ToDate.ToString(Format.DateTimeFormat) };
+                await _timeTrackerService.SaveTrackerAsync(TableName, tracker);
             }
         }
 
@@ -72,25 +80,23 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
         [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Fail, Attempts = 1)]
         public async Task FetchDataDailyTask()
         {
-            var adjustmentDay = DateTime.Now.AddDays(-1);
+            var now = DateTimeHelper.GetApiServerDateTime();
+            var adjustmentDay = now.AddDays(-1);
             var fromDate = new DateTime(adjustmentDay.Year, adjustmentDay.Month, adjustmentDay.Day, 0, 0, 0);
-            while (true)
+            var maxTimeRange = GetApiMaxTimeRange();
+            var dateRanges = DateTimeHelper.GetProportionTimeRange(fromDate, now, maxTimeRange);
+            foreach (var range in dateRanges)
             {
-                var data = await _liceseeApi.GetCustomersAsync(fromDate, BATCH_COUNT);
-                var toDate = data.Max(_ => _.RegTime);
-                await ImportDataToMultipleRepoAsync(data);
-                if (data.Count() < BATCH_COUNT)
+                var pageIndex = 0;
+                while (true)
                 {
-                    break;
-                }
-
-                if(toDate.HasValue)
-                {
-                    fromDate = toDate.Value;
-                }
-                else
-                {
-                    break;
+                    var data = await _liceseeApi.GetCustomersAsync(range.FromDate, range.ToDate, pageIndex, BATCH_COUNT);
+                    await ImportDataToMultipleRepoAsync(data);
+                    pageIndex++;
+                    if (data.Count() < BATCH_COUNT)
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -111,5 +117,8 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 
         protected override IEnumerable<string> GetSupportedRepoPrefix()
             => Settings.SupportedPrefix;
+
+        private TimeSpan GetApiMaxTimeRange()
+            => TimeSpan.FromMinutes(Settings.MaxTimeRange);
     }
 }

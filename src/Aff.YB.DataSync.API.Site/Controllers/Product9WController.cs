@@ -2,6 +2,7 @@
 using Aff.YB.DataSync.DataDomain.Models;
 using Aff.YB.DataSync.DataDomain.Params;
 using Fanex.Data.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace Aff.YB.DataSync.API.Site.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class Product9WController : ControllerBase
     {
 

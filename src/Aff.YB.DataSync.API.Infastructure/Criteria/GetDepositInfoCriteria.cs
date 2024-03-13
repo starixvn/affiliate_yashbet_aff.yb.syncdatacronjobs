@@ -5,11 +5,12 @@ namespace Aff.YB.DataSync.API.Infastructure.Criteria
 {
     public class GetDepositInfoCriteria : CriteriaBase
     {
-        public GetDepositInfoCriteria(DateTime updatedTime, int depositId, int batchCount = 2000)
+        public GetDepositInfoCriteria(DateTime fromDate, DateTime toDate, int pageIndex, int pageSize = 2000)
         {
-            UpdatedTime = updatedTime;
-            Id = depositId;
-            BatchCount = batchCount;
+            FromDate = fromDate;
+            ToDate = toDate;
+            PageIndex = pageIndex;
+            PageSize = pageSize;
         }
 
         public override string GetSettingKey()
@@ -18,10 +19,12 @@ namespace Aff.YB.DataSync.API.Infastructure.Criteria
         public override bool IsValid()
             => true;
 
-        public DateTime UpdatedTime { get; set; }
+        public DateTime FromDate { get; set; }
 
-        public int Id { get; set; }
+        public DateTime ToDate { get; set; }
 
-        public int BatchCount { get; set; }
+        public int PageIndex { get; set; }
+
+        public int PageSize { get; set; }
     }
 }

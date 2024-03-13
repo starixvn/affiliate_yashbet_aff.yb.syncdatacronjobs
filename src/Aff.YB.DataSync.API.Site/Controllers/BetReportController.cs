@@ -1,6 +1,7 @@
 ﻿using Aff.YB.DataSync.API.Infastructure.Criteria;
 using Aff.YB.DataSync.DataDomain.Models;
 using Fanex.Data.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace Aff.YB.DataSync.API.Site.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class BetReportController : ControllerBase
     {
         private readonly IDynamicRepository dynamicRepository;
@@ -29,8 +31,8 @@ namespace Aff.YB.DataSync.API.Site.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<DepositInfoModel>> GetDepositInfo(DateTime updatedTime, int id, int totalRow)
-            => await dynamicRepository.FetchAsync<DepositInfoModel>(new GetDepositInfoCriteria(updatedTime, id, totalRow));
+        public async Task<IEnumerable<DepositInfoModel>> GetDepositInfo(DateTime fromDate, DateTime toDate, int pageIndex, int pageSize = 2000)
+            => await dynamicRepository.FetchAsync<DepositInfoModel>(new GetDepositInfoCriteria(fromDate, toDate, pageIndex, pageSize));
 
         [HttpGet]
         public async Task<IEnumerable<BonusModel>> GetBonusInfo(int id, int batchCount = 2000)

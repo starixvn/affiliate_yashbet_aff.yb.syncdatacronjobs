@@ -10,6 +10,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Jobs.Interfaces;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 {

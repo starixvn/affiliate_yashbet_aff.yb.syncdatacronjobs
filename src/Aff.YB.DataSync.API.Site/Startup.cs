@@ -3,6 +3,7 @@ using Aff.YB.DataSync.API.Infastructure.ConfigurationModel;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,6 +43,13 @@ namespace Aff.YB.DataSync.API.Site
             services.Configure<List<User>>(Configuration.GetSection("Users"));
             ConfigFanexData();
             ConfigAuthentication(services);
+            services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
+                .RequireAuthenticatedUser()
+                .Build();
+            });
+
             services.AddSwaggerGen(c =>
             {
                 var jwtSecurityScheme = new OpenApiSecurityScheme
@@ -89,7 +96,9 @@ namespace Aff.YB.DataSync.API.Site
             });
 
             app.UseRouting();
-
+            app.UseJWTokenMiddleware();
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.Map("/", async context =>
@@ -97,9 +106,6 @@ namespace Aff.YB.DataSync.API.Site
                     await context.Response.WriteAsync("Site is running");
                 });
             });
-
-            app.UseJWTokenMiddleware();
-            app.UseAuthentication();
 
             app.UseEndpoints(endpoints =>
             {
