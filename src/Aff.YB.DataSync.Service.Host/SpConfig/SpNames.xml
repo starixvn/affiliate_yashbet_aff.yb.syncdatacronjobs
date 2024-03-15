@@ -1,20 +1,20 @@
 ﻿<Functions>
   <Function Name="Affiliate_N8Y">
-    <Setting Key="N8Y_Task_Aff_MemberInfo_Import" SpName="Task_Aff_MemberInfo_Import" DbName="DBAFFYB.Affiliate_YashBet.bodbAdminNet"/>
-    <Setting Key="N8Y_Task_Aff_GetSetting" SpName ="Task_Aff_GetSetting" DbName="DBAFFYB.Affiliate_YashBet.bodbAdminNet" />
+    <Setting Key="N8Y_Task_Aff_MemberInfo_Import" SpName="Task_Aff_MemberInfo_Import" DbName="DBAFFYB.Affiliate_YashBet.wsv_nap"/>
+    <Setting Key="N8Y_Task_Aff_GetSetting" SpName ="Task_Aff_GetSetting" DbName="DBAFFYB.Affiliate_YashBet.wsv_nap" />
   </Function>
   <Funtion Name="ThirdPartyImport">
-    <Setting Key="Master_Task_API_Queue_Import" SpName="Task_API_Queue_Import" DbName="DB052.bodb_YashBet.bodbLicenseeNet"/>
-    <Setting Key="Slave_Task_API_Queue_Import" SpName="Task_API_Queue_Import" DbName="DB053.bodb_YashBet.bodbLicenseeNet"/>
-    <Setting Key="Master_Task_API_TimeTracker_Sel" SpName="Task_API_TimeTracker_Sel" DbName="DB052.bodb_YashBet.bodbLicenseeNet"/>
-    <Setting Key="Slave_Task_API_TimeTracker_Sel" SpName="Task_API_TimeTracker_Sel" DbName="DB053.bodb_YashBet.bodbLicenseeNet"/>
-    <Setting Key="Master_Task_API_TimeTracker_Import" SpName="Task_API_TimeTracker_Import" DbName="DB052.bodb_YashBet.bodbLicenseeNet"/>
-    <Setting Key="Slave_Task_API_TimeTracker_Import" SpName="Task_API_TimeTracker_Import" DbName="DB053.bodb_YashBet.bodbLicenseeNet"/>
+    <Setting Key="Master_Task_API_Queue_Import" SpName="Task_API_Queue_Import" DbName="DB052.bodb_YashBet.wsv_lap"/>
+    <Setting Key="Slave_Task_API_Queue_Import" SpName="Task_API_Queue_Import" DbName="DB053.bodb_YashBet.wsv_lap"/>
+    <Setting Key="Master_Task_API_TimeTracker_Sel" SpName="Task_API_TimeTracker_Sel" DbName="DB052.bodb_YashBet.wsv_lap"/>
+    <Setting Key="Slave_Task_API_TimeTracker_Sel" SpName="Task_API_TimeTracker_Sel" DbName="DB053.bodb_YashBet.wsv_lap"/>
+    <Setting Key="Master_Task_API_TimeTracker_Import" SpName="Task_API_TimeTracker_Import" DbName="DB052.bodb_YashBet.wsv_lap"/>
+    <Setting Key="Slave_Task_API_TimeTracker_Import" SpName="Task_API_TimeTracker_Import" DbName="DB053.bodb_YashBet.wsv_lap"/>
   </Funtion>
   <Function Name="DataTracker">
-    <Setting Key="Master_Task_API_PushDataTracker_Sel" SpName="Task_API_PushDataTracker_Sel" DbName="DB052.bodb_YashBet.bodbLicenseeNet"/>
-    <Setting Key="Slave_Task_API_PushDataTracker_Sel" SpName="Task_API_PushDataTracker_Sel" DbName="DB053.bodb_YashBet.bodbLicenseeNet"/>
-    <Setting Key="Master_Task_API_PushDataTracker_Upd" SpName="Task_API_PushDataTracker_Upd" DbName="DB052.bodb_YashBet.bodbLicenseeNet"/>
-    <Setting Key="Slave_Task_API_PushDataTracker_Upd" SpName="Task_API_PushDataTracker_Upd" DbName="DB053.bodb_YashBet.bodbLicenseeNet"/>
+    <Setting Key="Master_Task_API_PushDataTracker_Sel" SpName="Task_API_PushDataTracker_Sel" DbName="DB052.bodb_YashBet.wsv_lap"/>
+    <Setting Key="Slave_Task_API_PushDataTracker_Sel" SpName="Task_API_PushDataTracker_Sel" DbName="DB053.bodb_YashBet.wsv_lap"/>
+    <Setting Key="Master_Task_API_PushDataTracker_Upd" SpName="Task_API_PushDataTracker_Upd" DbName="DB052.bodb_YashBet.wsv_lap"/>
+    <Setting Key="Slave_Task_API_PushDataTracker_Upd" SpName="Task_API_PushDataTracker_Upd" DbName="DB053.bodb_YashBet.wsv_lap"/>
   </Function>
 </Functions>
