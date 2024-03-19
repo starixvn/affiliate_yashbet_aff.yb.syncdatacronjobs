@@ -1,3 +1,4 @@
+
 namespace Aff.YB.DataSync.Service.Host
 {
     public class Program

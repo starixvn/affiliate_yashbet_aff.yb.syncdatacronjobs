@@ -1,18 +1,21 @@
 ﻿using Aff.YB.DataSync.DataDomain.Api;
 using Aff.YB.DataSync.DataDomain.Params;
 using Aff.YB.DataSync.Service.Infrastructure.Apis;
+using Refit;
 
 namespace Aff.YB.DataSync.Service.Infrastructure.Helpers
 {
-    public class AddDefaultContentHeader : DelegatingHandler
+    public class AuthenticatedHttpClientHandler : HttpClientHandler
     {
+        private readonly TokenRequest _tokenRequest;
         private readonly ITokenApi _tokenApi;
-        private readonly TokenRequestParam _tokenRequestParam;
 
-        public AddDefaultContentHeader(ITokenApi tokenApi, TokenRequestParam tokenRequestParam) {
-            _tokenApi = tokenApi;
-            _tokenRequestParam = tokenRequestParam;
+        public AuthenticatedHttpClientHandler(string memberSiteApiUrl, TokenRequest tokenRequest)
+        {
+            _tokenApi = TokenApiInstance(memberSiteApiUrl);
+            _tokenRequest = tokenRequest;
         }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             await SetJwtToken(request);
@@ -35,16 +38,28 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Helpers
         }
 
         private async Task<TokenInfo> GetJwtToken()
-        {   try
+        {
+            try
             {
-                var token = await _tokenApi.GetTokenAsync(_tokenRequestParam);
+                var token = await _tokenApi.GetTokenAsync(_tokenRequest);
                 return token;
 
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Cronjobs can't get JwtSecurityToken for {_tokenRequestParam.Username}!, {ex.Message}");
+                throw new InvalidOperationException($"Can't get JwtSecurityToken for {_tokenRequest.Username}!/n {ex.Message}");
             }
+        }
+
+        private static ITokenApi TokenApiInstance(string memberSiteApiUrl)
+        {
+            var handler = new HttpClientHandler();
+
+            return RestService.For<ITokenApi>(
+                new HttpClient(handler)
+                {
+                    BaseAddress = new Uri(memberSiteApiUrl)
+                });
         }
     }
 }

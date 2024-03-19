@@ -7,6 +7,6 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Apis
     public interface ITokenApi
     {
         [Post("/Auth")]
-        Task<TokenInfo> GetTokenAsync([Body] TokenRequestParam param);
+        Task<TokenInfo> GetTokenAsync([Body] TokenRequest param);
     }
 }

@@ -1,7 +1,7 @@
 ﻿
 namespace Aff.YB.DataSync.DataDomain.Params
 {
-    public class TokenRequestParam
+    public class TokenRequest
     {
         public string Username { get; set; }
 

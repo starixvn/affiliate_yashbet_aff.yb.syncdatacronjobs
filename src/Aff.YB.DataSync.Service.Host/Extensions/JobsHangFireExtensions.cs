@@ -8,7 +8,6 @@ using Fanex.Data.Repository;
 using Hangfire;
 using Refit;
 using Aff.YB.DataSync.Service.Host.Settings;
-using System.Net.Http.Headers;
 using Aff.YB.DataSync.Service.Infrastructure.Configurations;
 using Aff.YB.DataSync.Service.Infrastructure.Constants;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Bonus;
@@ -19,7 +18,6 @@ using Aff.YB.DataSync.Service.Infrastructure.Jobs;
 using System.Linq.Expressions;
 using static Aff.YB.DataSync.Service.Infrastructure.Constants.ServiceConfigName;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
-using Microsoft.Extensions.Configuration;
 using Aff.YB.DataSync.DataDomain.Params;
 
 namespace Aff.YB.DataSync.Service.Host.Extensions
@@ -34,6 +32,7 @@ namespace Aff.YB.DataSync.Service.Host.Extensions
             var appSetting = configuration.GetSection("App").Get<AppSetting>();
             services.Configure<LicenseeSiteSetting>(configuration.GetSection($"{AppSettingRoot}:LicenseeSetting"));
             services.Configure<TimeTrackerSetting>(configuration.GetSection($"{AppSettingRoot}:TrackerSetting"));
+
             services.AddRepository()
                 .AddService()
                 .AddFilter()
@@ -87,43 +86,19 @@ namespace Aff.YB.DataSync.Service.Host.Extensions
 
         private static IServiceCollection AddApi(this IServiceCollection services, AppSetting appSettings, IConfiguration configuration)
         {
+            var tokenRequest = configuration.GetSection("App:TokenRequest").Get<TokenRequest>();
+
             Func<HttpClient> CreateHttpClient = () =>
             {
-                services.AddHttpClient();
-                var serviceProvider = services.BuildServiceProvider();
-                var clientFactory = serviceProvider.GetService<IHttpClientFactory>();
-
-                var httpCLient = clientFactory.CreateClient();
+                var httpCLient = HttpClientFactory.Create(
+                      new AuthenticatedHttpClientHandler(appSettings.LicenseeDataAPI, tokenRequest));
                 httpCLient.BaseAddress = new Uri(appSettings.LicenseeDataAPI);
-                
+
                 return httpCLient;
             };
 
-            var tokenRequest = configuration.GetSection("App:TokenRequest").Get<TokenRequestParam>();
-            var authApi = RestService.For<ITokenApi>(CreateHttpClient());
-
-            var settings = new RefitSettings()
-            {
-                HttpMessageHandlerFactory = () => new AddDefaultContentHeader(authApi, tokenRequest),
-                AuthorizationHeaderValueGetter = async (request, cancel) =>
-                {
-                    try
-                    {
-                        var token = await authApi.GetTokenAsync(tokenRequest).ConfigureAwait(false);
-
-                        return token.AccessToken;
-
-                    }
-                    catch (Exception ex)
-                    {
-                        var errMessage = ErrorMessageHelper.GenerateMessage(ex);
-                        throw new InvalidOperationException($"Cronjobs can't get JwtSecurityToken for {tokenRequest.Username}!,/n {errMessage}");
-                    }
-                }
-            };
-
-            services.AddSingleton(RestService.For<ILicenseeApi>(CreateHttpClient(), settings));
-            services.AddSingleton(RestService.For<IProduct9WApi>(CreateHttpClient(), settings));
+            services.AddSingleton(RestService.For<ILicenseeApi>(CreateHttpClient()));
+            services.AddSingleton(RestService.For<IProduct9WApi>(CreateHttpClient()));
             return services;
         }
 
