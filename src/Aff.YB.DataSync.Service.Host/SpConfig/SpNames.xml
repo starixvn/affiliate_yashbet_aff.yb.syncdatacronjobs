@@ -1,7 +1,7 @@
 ﻿<Functions>
   <Function Name="Affiliate_N8Y">
-    <Setting Key="N8Y_Task_Aff_MemberInfo_Import" SpName="Task_Aff_MemberInfo_Import" DbName="DBAFFYB.Affiliate_YashBet.wsv_nap"/>
-    <Setting Key="N8Y_Task_Aff_GetSetting" SpName ="Task_Aff_GetSetting" DbName="DBAFFYB.Affiliate_YashBet.wsv_nap" />
+    <Setting Key="N8Y_Task_Aff_MemberInfo_Import" SpName="Task_Aff_MemberInfo_Import" DbName="DBAFFYB.Affiliate_YashBet.wsv_aff"/>
+    <Setting Key="N8Y_Task_Aff_GetSetting" SpName ="Task_Aff_GetSetting" DbName="DBAFFYB.Affiliate_YashBet.wsv_aff" />
   </Function>
   <Funtion Name="ThirdPartyImport">
     <Setting Key="Master_Task_API_Queue_Import" SpName="Task_API_Queue_Import" DbName="DB052.bodb_YashBet.wsv_lap"/>
