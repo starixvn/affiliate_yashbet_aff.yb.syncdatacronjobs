@@ -4,13 +4,13 @@ using Aff.YB.DataSync.Service.Core.Repository;
 using Aff.YB.DataSync.Service.Core.Services;
 using Aff.YB.DataSync.Service.Infrastructure.Apis;
 using Aff.YB.DataSync.Service.Infrastructure.Configurations;
+using Aff.YB.DataSync.Service.Infrastructure.Constants;
 using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Base;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs.Interfaces;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 
 namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 {
@@ -105,7 +105,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
                 try
                 {
                     await FetchAndInsertDataByPageAsync(range.FromDate, range.ToDate);
-                    var tracker = new TrackerInfo { CalledTime = DateTime.Now, KeyValue = range.ToDate.ToString() };
+                    var tracker = new TrackerInfo { CalledTime = DateTime.Now, KeyValue = range.ToDate.ToString(Format.DateTimeFormat) };
                     await _timeTrackerService.SaveTrackerAsync(TableName, tracker);
                 }
                 catch (Exception ex)
@@ -146,7 +146,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
         {
             var adjustmentMin = Settings.AdjustmentValue;
             var tracker = await _timeTrackerService.GetTrackerAsync(TableName, t => t.CalledTime);
-            var trackingDate = DateTime.Parse(tracker.KeyValue);
+            var trackingDate = DateTime.ParseExact(tracker.KeyValue, Format.DateTimeFormat, null);
             var lastFetchDate = trackingDate.AddMinutes(adjustmentMin);
 
             return lastFetchDate;

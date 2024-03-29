@@ -11,6 +11,7 @@ using Aff.YB.DataSync.Service.Infrastructure.Jobs.Interfaces;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Globalization;
 
 namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
 {
@@ -45,7 +46,7 @@ namespace Aff.YB.DataSync.Service.Infrastructure.Jobs
         public override async Task FetchDataAsync()
         {
             var tracker = await _timeTrackerService.GetTrackerAsync(TableName, t => t.CalledTime);
-            var fromDate = GetAdjustmentTime(DateTime.Parse(tracker.KeyValue));
+            var fromDate = GetAdjustmentTime(DateTime.ParseExact(tracker.KeyValue, Format.DateTimeFormat, null));
             await FetchDataAsync(fromDate);
         }
 
