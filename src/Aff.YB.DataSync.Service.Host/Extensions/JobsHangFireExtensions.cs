@@ -17,8 +17,9 @@ using Aff.YB.DataSync.Service.Infrastructure.Jobs.RetryJob;
 using Aff.YB.DataSync.Service.Infrastructure.Jobs;
 using System.Linq.Expressions;
 using static Aff.YB.DataSync.Service.Infrastructure.Constants.ServiceConfigName;
-using Aff.YB.DataSync.Service.Infrastructure.Helpers;
 using Aff.YB.DataSync.DataDomain.Params;
+using Aff.YB.DataSync.Service.Infrastructure.Handlers;
+using System.Net;
 
 namespace Aff.YB.DataSync.Service.Host.Extensions
 {
@@ -42,8 +43,6 @@ namespace Aff.YB.DataSync.Service.Host.Extensions
             return services;
         }
 
-
-
         public static void UseHangFire(this IApplicationBuilder app, string path)
         {
             app.UseHangfireDashboard(path, new DashboardOptions
@@ -56,8 +55,13 @@ namespace Aff.YB.DataSync.Service.Host.Extensions
 
         public static void UseRecuringJobs(this IApplicationBuilder app, IConfiguration configuration)
         {
-            RegisterFetchDataTask(configuration);
-            RegisterRetryDataTask(configuration);
+            var isTest = configuration.GetSection("App:IsTest").Get<bool>();
+            if (!isTest)
+            {
+                RegisterFetchDataTask(configuration);
+                RegisterRetryDataTask(configuration);
+            }
+
         }
 
         private static IServiceCollection AddRepository(this IServiceCollection services)
@@ -86,19 +90,34 @@ namespace Aff.YB.DataSync.Service.Host.Extensions
 
         private static IServiceCollection AddApi(this IServiceCollection services, AppSetting appSettings, IConfiguration configuration)
         {
-            var tokenRequest = configuration.GetSection("App:TokenRequest").Get<TokenRequest>();
-
-            Func<HttpClient> CreateHttpClient = () =>
+            var proxySetting = configuration.GetSection("ProxySetting").Get<ProxySetting>();
+            Func<HttpClientHandler> defaultFuncHttpHandler = () => new HttpClientHandler()
             {
-                var httpCLient = HttpClientFactory.Create(
-                      new AuthenticatedHttpClientHandler(appSettings.LicenseeDataAPI, tokenRequest));
-                httpCLient.BaseAddress = new Uri(appSettings.LicenseeDataAPI);
-
-                return httpCLient;
+                Proxy = proxySetting != null && proxySetting.IsUseProxy
+                              ? new WebProxy(new Uri(proxySetting.ProxyUrl))
+                              : null,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             };
 
-            services.AddSingleton(RestService.For<ILicenseeApi>(CreateHttpClient()));
-            services.AddSingleton(RestService.For<IProduct9WApi>(CreateHttpClient()));
+            services.Configure<TokenRequest>(configuration.GetSection("App:TokenRequest"));
+            var setting = new RefitSettings();
+
+            services.AddTransient<AuthHeaderHandler>();
+            services.AddMemoryCache();
+
+            services.AddRefitClient<ITokenApi>(setting)
+                .ConfigureHttpClient(c => c.BaseAddress = new Uri(appSettings.LicenseeDataAPI))
+                .ConfigurePrimaryHttpMessageHandler(defaultFuncHttpHandler);
+
+            services.AddRefitClient<ILicenseeApi>(setting)
+                .ConfigureHttpClient(c => c.BaseAddress = new Uri(appSettings.LicenseeDataAPI))
+                .AddHttpMessageHandler<AuthHeaderHandler>()
+                .ConfigurePrimaryHttpMessageHandler(defaultFuncHttpHandler);
+
+            services.AddRefitClient<IProduct9WApi>(setting)
+                .ConfigureHttpClient(c => c.BaseAddress = new Uri(appSettings.LicenseeDataAPI))
+                .AddHttpMessageHandler<AuthHeaderHandler>()
+                .ConfigurePrimaryHttpMessageHandler(defaultFuncHttpHandler);
             return services;
         }
 
