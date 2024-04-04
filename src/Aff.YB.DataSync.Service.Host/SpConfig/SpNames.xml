@@ -5,16 +5,11 @@
   </Function>
   <Funtion Name="ThirdPartyImport">
     <Setting Key="Master_Task_API_Queue_Import" SpName="Task_API_Queue_Import" DbName="DB052.bodb_YashBet.wsv_lap"/>
-    <Setting Key="Slave_Task_API_Queue_Import" SpName="Task_API_Queue_Import" DbName="DB053.bodb_YashBet.wsv_lap"/>
     <Setting Key="Master_Task_API_TimeTracker_Sel" SpName="Task_API_TimeTracker_Sel" DbName="DB052.bodb_YashBet.wsv_lap"/>
-    <Setting Key="Slave_Task_API_TimeTracker_Sel" SpName="Task_API_TimeTracker_Sel" DbName="DB053.bodb_YashBet.wsv_lap"/>
     <Setting Key="Master_Task_API_TimeTracker_Import" SpName="Task_API_TimeTracker_Import" DbName="DB052.bodb_YashBet.wsv_lap"/>
-    <Setting Key="Slave_Task_API_TimeTracker_Import" SpName="Task_API_TimeTracker_Import" DbName="DB053.bodb_YashBet.wsv_lap"/>
   </Funtion>
   <Function Name="DataTracker">
     <Setting Key="Master_Task_API_PushDataTracker_Sel" SpName="Task_API_PushDataTracker_Sel" DbName="DB052.bodb_YashBet.wsv_lap"/>
-    <Setting Key="Slave_Task_API_PushDataTracker_Sel" SpName="Task_API_PushDataTracker_Sel" DbName="DB053.bodb_YashBet.wsv_lap"/>
     <Setting Key="Master_Task_API_PushDataTracker_Upd" SpName="Task_API_PushDataTracker_Upd" DbName="DB052.bodb_YashBet.wsv_lap"/>
-    <Setting Key="Slave_Task_API_PushDataTracker_Upd" SpName="Task_API_PushDataTracker_Upd" DbName="DB053.bodb_YashBet.wsv_lap"/>
   </Function>
 </Functions>
