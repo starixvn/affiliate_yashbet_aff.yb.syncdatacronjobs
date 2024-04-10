@@ -29,6 +29,7 @@ namespace Aff.YB.DataSync.Service.Host
             services.AddLogging();
             services.AddUnderMaintenance(Configuration);
             services.AddHttpClient();
+            services.AddSiteHealthChecks(Configuration);
 
             AddHangFireService(services);
 
@@ -50,6 +51,7 @@ namespace Aff.YB.DataSync.Service.Host
                 app.UseHsts();
             }
             app.UseMiddleware<ErrorHandler>();
+            app.UseSiteHealthChecks(Configuration);
             app.UseForwardedHeaders();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
