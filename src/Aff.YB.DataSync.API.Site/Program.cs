@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace Aff.YB.DataSync.API.Site
 {
@@ -24,6 +25,7 @@ namespace Aff.YB.DataSync.API.Site
                .ConfigureWebHostDefaults(webBuilder =>
                {
                    webBuilder.UseStartup<Startup>();
-               });
+               })
+               .UseSerilog();
     }
 }

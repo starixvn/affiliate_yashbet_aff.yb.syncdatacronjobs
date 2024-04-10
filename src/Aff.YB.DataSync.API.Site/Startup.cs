@@ -1,5 +1,6 @@
 using Aff.YB.DataSync.API.Infastructure;
 using Aff.YB.DataSync.API.Infastructure.ConfigurationModel;
+using Aff.YB.DataSync.API.Site.Middleware;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,8 +12,11 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,9 +31,9 @@ namespace Aff.YB.DataSync.API.Site
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            //Log.Logger = new LoggerConfiguration()
-            //    .ReadFrom.Configuration(configuration)
-            //    .CreateLogger();
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .CreateLogger();
         }
 
         public IConfiguration Configuration { get; }
@@ -43,6 +47,7 @@ namespace Aff.YB.DataSync.API.Site
             services.Configure<List<User>>(Configuration.GetSection("Users"));
             ConfigFanexData();
             ConfigAuthentication(services);
+            services.AddSerilog();
             services.AddAuthorization(options =>
             {
                 options.DefaultPolicy = new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
@@ -81,6 +86,7 @@ namespace Aff.YB.DataSync.API.Site
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<ErrorHandler>();
             if (env.IsDevelopment() || Configuration.GetValue<string>("Environment") == Environments.Development)
             {
                 app.UseDeveloperExceptionPage();
@@ -93,6 +99,16 @@ namespace Aff.YB.DataSync.API.Site
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
+            app.UseSerilogRequestLogging(options =>
+            {
+                options.GetLevel = (ctx, elapsed, ex) =>
+                {
+                    if (ex != null || ctx.Response.StatusCode > 499)
+                        return LogEventLevel.Error;
+                    return LogEventLevel.Information;
+                };
             });
 
             app.UseRouting();

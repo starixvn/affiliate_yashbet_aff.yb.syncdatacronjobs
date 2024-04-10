@@ -30,7 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aff.YB.DataSync.Service.Cor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aff.YB.DataSync.Service.Host", "src\Aff.YB.DataSync.Service.Host\Aff.YB.DataSync.Service.Host.csproj", "{7CFE09D3-7886-408F-AFA4-C3F139F2C8A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aff.YB.DataSync.Service.Infrastructure", "src\Aff.YB.DataSync.Service.Infrastructure\Aff.YB.DataSync.Service.Infrastructure.csproj", "{9D9D8D20-3401-4DBE-B147-2CCC0BBF2B60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aff.YB.DataSync.Service.Infrastructure", "src\Aff.YB.DataSync.Service.Infrastructure\Aff.YB.DataSync.Service.Infrastructure.csproj", "{9D9D8D20-3401-4DBE-B147-2CCC0BBF2B60}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
