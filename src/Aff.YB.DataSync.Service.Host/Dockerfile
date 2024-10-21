@@ -1,24 +1,32 @@
+ARG CI_REGISTRY_IMAGE
+
+FROM $CI_REGISTRY_IMAGE:builder AS deps
+
+RUN mkdir -p /src/packages
+
 FROM hub.nexdev.net/base/dotnet/core/sdk:6.0-alpine AS builder
+
+ENV NUGET_PACKAGES=/src/packages
+
+COPY --from=deps $NUGET_PACKAGES/. $NUGET_PACKAGES/
 
 WORKDIR "/src"
 
 RUN dotnet nuget add source https://nuget.nexdev.net/api/v2
 
 COPY ["src/Aff.YB.DataSync.Service.Core/Aff.YB.DataSync.Service.Core.csproj", "./Aff.YB.DataSync.Service.Core/"]
-RUN dotnet restore "Aff.YB.DataSync.Service.Core/Aff.YB.DataSync.Service.Core.csproj" -v n
+RUN dotnet restore -v n -r linux-x64 ./Aff.YB.DataSync.Service.Core/Aff.YB.DataSync.Service.Core.csproj
 
 COPY ["src/Aff.YB.DataSync.Service.Infrastructure/Aff.YB.DataSync.Service.Infrastructure.csproj", "./Aff.YB.DataSync.Service.Infrastructure/"]
-RUN dotnet restore "Aff.YB.DataSync.Service.Infrastructure/Aff.YB.DataSync.Service.Infrastructure.csproj" -v n
+RUN dotnet restore -v n -r linux-x64 ./Aff.YB.DataSync.Service.Infrastructure/Aff.YB.DataSync.Service.Infrastructure.csproj
 
 COPY ["src/Aff.YB.DataSync.Service.Host/Aff.YB.DataSync.Service.Host.csproj", "./Aff.YB.DataSync.Service.Host/"]
-RUN dotnet restore "Aff.YB.DataSync.Service.Host/Aff.YB.DataSync.Service.Host.csproj" -v n
+RUN dotnet restore -v n -r linux-x64 ./Aff.YB.DataSync.Service.Host/Aff.YB.DataSync.Service.Host.csproj
 
 COPY "/src" .
 
 WORKDIR "/src/Aff.YB.DataSync.Service.Host"
-RUN dotnet build "Aff.YB.DataSync.Service.Host.csproj" -c Release -o /app/build
-
-RUN dotnet publish "Aff.YB.DataSync.Service.Host.csproj" -c Release -o /app/publish
+RUN dotnet publish -r linux-x64 --self-contained false -o /app/publish
 
 FROM hub.nexdev.net/base/dotnet/core/aspnet:6.0-alpine
 

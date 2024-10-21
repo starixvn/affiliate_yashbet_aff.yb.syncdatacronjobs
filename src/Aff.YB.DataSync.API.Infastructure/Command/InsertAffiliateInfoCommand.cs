@@ -16,7 +16,17 @@ namespace Aff.YB.DataSync.API.Infastructure.Command
 
         public string UserName { get; set; }
 
-        public override string GetSettingKey() => "Affiliate_AffiliateInfo_Set";
+        public string FirstName { get; set; }
+
+        public string LastName { get; set; }
+
+        public string ContactNumber { get; set; }
+
+        public string Email { get; set; }
+
+        public string Status { get; set; }
+
+        public override string GetSettingKey() => "Affiliate_AffiliateInfo_Set_V2";
 
         public override bool IsValid() => true;
     }
