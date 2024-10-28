@@ -108,7 +108,12 @@ namespace Aff.YB.DataSync.API.Site.Controllers
                     CustId = affiliate.CustId,
                     ParentAffiliate = affiliate.ParentAffiliate,
                     SiteId = affiliate.SiteId,
-                    UserName = affiliate.UserName
+                    UserName = affiliate.UserName,
+                    FirstName = affiliate.FirstName,
+                    LastName = affiliate.LastName,
+                    ContactNumber = affiliate.ContactNumber,
+                    Email = affiliate.Email,
+                    Status = affiliate.Status
                 });
                 return new ResultInfo { IsSuccess = true };
             }

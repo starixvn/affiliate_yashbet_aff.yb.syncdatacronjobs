@@ -1,24 +1,32 @@
+ARG CI_REGISTRY_IMAGE
+
+FROM $CI_REGISTRY_IMAGE:builder AS deps
+
+RUN mkdir -p /src/packages
+
 FROM hub.nexdev.net/base/dotnet/core/sdk:6.0-alpine AS builder
+
+ENV NUGET_PACKAGES=/src/packages
+
+COPY --from=deps $NUGET_PACKAGES/. $NUGET_PACKAGES/
 
 WORKDIR "/src"
 
 RUN dotnet nuget add source https://nuget.nexdev.net/api/v2
 
 COPY ["src/Aff.YB.DataSync.API.Core/Aff.YB.DataSync.API.Core.csproj", "./Aff.YB.DataSync.API.Core/"]
-RUN dotnet restore "Aff.YB.DataSync.API.Core/Aff.YB.DataSync.API.Core.csproj" -v n
+RUN dotnet restore -v n -r linux-x64 ./Aff.YB.DataSync.API.Core/Aff.YB.DataSync.API.Core.csproj
 
 COPY ["src/Aff.YB.DataSync.API.Infastructure/Aff.YB.DataSync.API.Infastructure.csproj", "./Aff.YB.DataSync.API.Infastructure/"]
-RUN dotnet restore "Aff.YB.DataSync.API.Infastructure/Aff.YB.DataSync.API.Infastructure.csproj" -v n
+RUN dotnet restore -v n -r linux-x64 ./Aff.YB.DataSync.API.Infastructure/Aff.YB.DataSync.API.Infastructure.csproj
 
 COPY ["src/Aff.YB.DataSync.API.Site/Aff.YB.DataSync.API.Site.csproj", "./Aff.YB.DataSync.API.Site/"]
-RUN dotnet restore "Aff.YB.DataSync.API.Site/Aff.YB.DataSync.API.Site.csproj" -v n
+RUN dotnet restore -v n -r linux-x64 ./Aff.YB.DataSync.API.Site/Aff.YB.DataSync.API.Site.csproj
 
 COPY "/src" .
 
 WORKDIR "/src/Aff.YB.DataSync.API.Site"
-RUN dotnet build "Aff.YB.DataSync.API.Site.csproj" -c Release -o /app/build
-
-RUN dotnet publish "Aff.YB.DataSync.API.Site.csproj" -c Release -o /app/publish
+RUN dotnet publish -r linux-x64 --self-contained false -o /app/publish
 
 FROM hub.nexdev.net/base/dotnet/core/aspnet:6.0-alpine
 
